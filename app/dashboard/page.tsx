@@ -7,7 +7,7 @@ export default async function DashboardLanding() {
   const session = await getSessionUser();
   if (session) {
     const profile = await getUserProfile(session.uid);
-    if (profile) redirect(roleLanding(profile.role));
+    if (profile) redirect(roleLanding(profile.roles));
   }
 
   return (

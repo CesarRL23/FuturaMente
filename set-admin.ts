@@ -1,8 +1,9 @@
 /**
  * RUN: npx ts-node set-admin.ts "tu@correo.com"
  */
-const admin = require("firebase-admin");
-const fs = require("fs");
+import fs from "node:fs";
+import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 try {
   const envStr = fs.readFileSync(".env.local", "utf-8");
@@ -20,11 +21,11 @@ try {
       process.env[key] = value;
     }
   }
-} catch (e) {
+} catch {
   console.log("No se pudo leer .env.local de forma manual.");
 }
 
-if (!admin.apps.length) {
+if (!getApps().length) {
   const serviceAccountRaw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   if (!serviceAccountRaw) {
     console.error("No se encontró FIREBASE_SERVICE_ACCOUNT_JSON en .env.local");
@@ -32,12 +33,12 @@ if (!admin.apps.length) {
   }
 
   const serviceAccount = JSON.parse(serviceAccountRaw);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+  initializeApp({
+    credential: cert(serviceAccount),
   });
 }
 
-const db = admin.firestore();
+const db = getFirestore();
 
 async function makeAdmin(email: string) {
   try {
@@ -51,7 +52,7 @@ async function makeAdmin(email: string) {
     }
 
     const userDoc = snapshot.docs[0];
-    await userDoc.ref.update({ role: "ADMIN" });
+    await userDoc.ref.update({ roles: ["ADMIN"], primaryRole: "ADMIN", role: "ADMIN" });
 
     console.log(`¡Éxito! El usuario ${email} ahora es Administrador.`);
     console.log("Por favor, cierra sesión y vuelve a entrar en la plataforma para actualizar tu perfil.");

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { requireRole } from "@/lib/auth/session";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { hasRole, requireRole } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { Roles } from "@/models/roles";
 
@@ -46,11 +46,16 @@ export default async function StudentGradesPage() {
     subjectsMap.set(d.id, d.data().name as string);
   });
 
-  const profsSnap = await db.collection("users").where("role", "==", Roles.PROFESSOR).get();
+  const profsByArraySnap = await db.collection("users").where("roles", "array-contains", Roles.PROFESSOR).get();
+  const profsByLegacySnap = await db.collection("users").where("role", "==", Roles.PROFESSOR).get();
   const profsMap = new Map<string, string>();
-  profsSnap.docs.forEach((d) => {
-    profsMap.set(d.id, d.data().name as string);
-  });
+  [...profsByArraySnap.docs, ...profsByLegacySnap.docs]
+    .map((d) => d.data() as { id: string; name: string; role?: string; roles?: string[] })
+    .filter((value, index, self) => self.findIndex((p) => p.id === value.id) === index)
+    .filter((p) => hasRole(p, Roles.PROFESSOR))
+    .forEach((p) => {
+      profsMap.set(p.id, p.name);
+    });
 
   // --- AGRUPAMIENTO POR MATERIA ---
   const gradesBySubject = new Map<string, typeof grades>();

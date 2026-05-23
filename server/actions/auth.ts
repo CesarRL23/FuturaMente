@@ -33,6 +33,8 @@ export async function ensureUserProfile(input: { uid: string; name: string; emai
       id: input.uid,
       name: input.name,
       email: input.email,
+      roles: [Roles.STUDENT],
+      primaryRole: Roles.STUDENT,
       role: Roles.STUDENT,
       createdAt: now,
     });

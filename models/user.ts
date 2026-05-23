@@ -4,7 +4,9 @@ export type UserProfile = {
   id: string; // uid
   name: string;
   email: string;
-  role: Role;
+  roles: Role[];
+  primaryRole?: Role;
+  role?: Role; // compatibilidad con documentos antiguos
   createdAt: number; // epoch ms
 };
 

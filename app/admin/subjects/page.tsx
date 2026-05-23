@@ -2,9 +2,9 @@ import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { requireRole } from "@/lib/auth/session";
+import { hasRole, requireRole } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { Roles } from "@/models/roles";
+import { Roles, type Role } from "@/models/roles";
 import { adminAssignProfessor, adminCreateSubject, adminAssignStudentToSubject, adminRemoveStudentFromSubject } from "@/server/actions/admin";
 
 export default async function AdminSubjectsPage() {
@@ -17,19 +17,34 @@ export default async function AdminSubjectsPage() {
     .get();
   const subjects = subjectsSnap.docs.map((d) => d.data() as { id: string; name: string; professorId: string | null });
 
-  const professorsSnap = await getAdminDb()
+  const professorsByArraySnap = await getAdminDb()
+    .collection("users")
+    .where("roles", "array-contains", Roles.PROFESSOR)
+    .limit(100)
+    .get();
+  const professorsByLegacySnap = await getAdminDb()
     .collection("users")
     .where("role", "==", Roles.PROFESSOR)
     .limit(100)
     .get();
-  const professors = professorsSnap.docs.map((d) => d.data() as { id: string; name: string; email: string });
+  const professors = [...professorsByArraySnap.docs, ...professorsByLegacySnap.docs]
+    .map((d) => d.data() as { id: string; name: string; email: string })
+    .filter((value, index, self) => self.findIndex((p) => p.id === value.id) === index);
 
-  const studentsSnap = await getAdminDb()
+  const studentsByArraySnap = await getAdminDb()
+    .collection("users")
+    .where("roles", "array-contains", Roles.STUDENT)
+    .limit(500)
+    .get();
+  const studentsByLegacySnap = await getAdminDb()
     .collection("users")
     .where("role", "==", Roles.STUDENT)
     .limit(500)
     .get();
-  const students = studentsSnap.docs.map((d) => d.data() as { id: string; name: string; email: string });
+  const students = [...studentsByArraySnap.docs, ...studentsByLegacySnap.docs]
+    .map((d) => d.data() as { id: string; name: string; email: string; role?: Role; roles?: Role[] })
+    .filter((value, index, self) => self.findIndex((st) => st.id === value.id) === index)
+    .filter((st) => hasRole(st, Roles.STUDENT));
 
   const enrollmentsSnap = await getAdminDb()
     .collection("enrollments")

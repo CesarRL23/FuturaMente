@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { professorAddObservation, professorUpdateObservation } from "@/server/actions/professor";
 
@@ -19,19 +19,13 @@ interface Props {
 export function ProfessorObservationForm({ subjects, enrollments, students, editObservation, onCancelEdit }: Props) {
   const [subjectId, setSubjectId] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (editObservation) {
-      // Find the subject where this student is enrolled under this professor
-      const enrollment = enrollments.find((e) => e.studentId === editObservation.studentId);
-      if (enrollment && enrollment.subjectId) {
-        setSubjectId(enrollment.subjectId);
-      }
-    }
-  }, [editObservation, enrollments]);
+  const selectedSubjectId =
+    editObservation
+      ? (enrollments.find((e) => e.studentId === editObservation.studentId)?.subjectId ?? "")
+      : subjectId;
 
   const enrolledStudents = enrollments
-    .filter((e) => e.subjectId === subjectId)
+    .filter((e) => e.subjectId === selectedSubjectId)
     .map((e) => students.find((s) => s.id === e.studentId))
     .filter(Boolean) as Student[];
 
@@ -45,7 +39,7 @@ export function ProfessorObservationForm({ subjects, enrollments, students, edit
         <select
           name="subjectId"
           className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950 disabled:opacity-50"
-          value={subjectId}
+          value={selectedSubjectId}
           onChange={(e) => setSubjectId(e.target.value)}
           disabled={!!editObservation}
           required={!editObservation}
@@ -66,13 +60,13 @@ export function ProfessorObservationForm({ subjects, enrollments, students, edit
         <select
           name="studentId"
           className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950 disabled:opacity-50"
-          disabled={!subjectId || !!editObservation}
+          disabled={!selectedSubjectId || !!editObservation}
           defaultValue={editObservation?.studentId ?? ""}
           key={editObservation?.studentId ?? "new"}
           required
         >
           <option value="" disabled>
-            {subjectId ? "Selecciona estudiante" : "Primero selecciona materia"}
+            {selectedSubjectId ? "Selecciona estudiante" : "Primero selecciona materia"}
           </option>
           {/* Si está en modo edición, obligamos a que el estudiante aparezca aunque no encontremos enrollment perfecto */}
           {editObservation && !enrolledStudents.find(s => s.id === editObservation.studentId) && (
@@ -86,7 +80,7 @@ export function ProfessorObservationForm({ subjects, enrollments, students, edit
             </option>
           ))}
         </select>
-        {subjectId && enrolledStudents.length === 0 && !editObservation && (
+        {selectedSubjectId && enrolledStudents.length === 0 && !editObservation && (
           <p className="text-xs text-zinc-500 max-w-sm">No hay estudiantes inscritos en esta materia.</p>
         )}
       </div>

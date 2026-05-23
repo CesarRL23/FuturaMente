@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth/session";
+import { hasRole, requireRole } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { Roles } from "@/models/roles";
 import { ProfessorObservationsClient } from "./ProfessorObservationsClient";
@@ -28,13 +28,12 @@ export default async function ProfessorObservationsPage() {
     (d) => d.data() as { id: string; studentId: string; subjectId: string },
   );
 
-  const studentsSnap = await getAdminDb()
-    .collection("users")
-    .where("role", "==", Roles.STUDENT)
-    .get();
-  const allStudents = studentsSnap.docs.map(
-    (d) => d.data() as { id: string; name: string; email: string },
-  );
+  const studentsByArraySnap = await getAdminDb().collection("users").where("roles", "array-contains", Roles.STUDENT).get();
+  const studentsByLegacySnap = await getAdminDb().collection("users").where("role", "==", Roles.STUDENT).get();
+  const allStudents = [...studentsByArraySnap.docs, ...studentsByLegacySnap.docs]
+    .map((d) => d.data() as { id: string; name: string; email: string; role?: string; roles?: string[] })
+    .filter((value, index, self) => self.findIndex((st) => st.id === value.id) === index)
+    .filter((st) => hasRole(st, Roles.STUDENT));
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">

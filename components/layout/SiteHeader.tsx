@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { clearSession } from "@/server/actions/auth";
-import { getSessionUser, getUserProfile, roleLanding } from "@/lib/auth/session";
+import { getSessionUser, getUserProfile, hasRole, roleLanding } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
+import { Roles } from "@/models/roles";
 
 export async function SiteHeader() {
   const session = await getSessionUser();
@@ -27,14 +28,31 @@ export async function SiteHeader() {
         {session && profile ? (
           <div className="flex items-center gap-4">
             <span className="text-sm text-zinc-600 dark:text-zinc-300 hidden sm:inline-block">
-              {profile.name} ({profile.role})
+              {profile.name} ({profile.roles.join(" / ")})
             </span>
             <Link 
-              href={roleLanding(profile.role)} 
+              href={roleLanding(profile.roles)} 
               className="text-sm font-medium hover:text-zinc-600 dark:hover:text-zinc-300"
             >
               Dashboard
             </Link>
+            {hasRole(profile, Roles.PROFESSOR) && hasRole(profile, Roles.STUDENT) ? (
+              <>
+                <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
+                <Link
+                  href="/professor"
+                  className="text-sm font-medium hover:text-zinc-600 dark:hover:text-zinc-300"
+                >
+                  Panel profesor
+                </Link>
+                <Link
+                  href="/student"
+                  className="text-sm font-medium hover:text-zinc-600 dark:hover:text-zinc-300"
+                >
+                  Panel estudiante
+                </Link>
+              </>
+            ) : null}
             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
             <form action={handleLogout}>
               <button 

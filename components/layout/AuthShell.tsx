@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 
 export function AuthShell({
@@ -12,20 +11,6 @@ export function AuthShell({
 }) {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link className="text-sm font-semibold tracking-tight" href="/">
-            AcadexPlus
-          </Link>
-          <Link
-            className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-            href="/"
-          >
-            Inicio
-          </Link>
-        </div>
-      </header>
-
       <main className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-2 md:items-start">
         <div className="space-y-3">
           <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>

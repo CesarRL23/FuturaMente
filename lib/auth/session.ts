@@ -28,7 +28,13 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const snap = await getAdminDb().collection("users").doc(uid).get();
   if (!snap.exists) return null;
-  return snap.data() as UserProfile;
+  const data = snap.data() as UserProfile;
+  const roles = normalizeRoles(data);
+  return {
+    ...data,
+    roles,
+    primaryRole: getPrimaryRole(data),
+  };
 }
 
 export async function requireAuth() {
@@ -41,11 +47,13 @@ export async function requireRole(roles: Role[]) {
   const user = await requireAuth();
   const profile = await getUserProfile(user.uid);
   if (!profile) redirect("/login");
-  if (!roles.includes(profile.role)) redirect("/dashboard");
+  const userRoles = normalizeRoles(profile);
+  if (!roles.some((role) => userRoles.includes(role))) redirect("/dashboard");
   return { user, profile };
 }
 
-export function roleLanding(role: Role) {
+export function roleLanding(roleOrRoles: Role | Role[]) {
+  const role = Array.isArray(roleOrRoles) ? getPreferredRole(roleOrRoles) : roleOrRoles;
   switch (role) {
     case Roles.ADMIN:
       return "/admin";
@@ -55,5 +63,30 @@ export function roleLanding(role: Role) {
     default:
       return "/student";
   }
+}
+
+export function normalizeRoles(profile: Pick<UserProfile, "roles" | "role">) {
+  if (Array.isArray(profile.roles) && profile.roles.length > 0) {
+    return Array.from(new Set(profile.roles));
+  }
+  if (profile.role) return [profile.role];
+  return [Roles.STUDENT];
+}
+
+export function hasRole(profile: Pick<UserProfile, "roles" | "role">, role: Role) {
+  return normalizeRoles(profile).includes(role);
+}
+
+function getPreferredRole(roles: Role[]) {
+  if (roles.includes(Roles.ADMIN)) return Roles.ADMIN;
+  if (roles.includes(Roles.PROFESSOR)) return Roles.PROFESSOR;
+  return Roles.STUDENT;
+}
+
+function getPrimaryRole(profile: Pick<UserProfile, "roles" | "role" | "primaryRole">) {
+  if (profile.primaryRole && normalizeRoles(profile).includes(profile.primaryRole)) {
+    return profile.primaryRole;
+  }
+  return getPreferredRole(normalizeRoles(profile));
 }
 

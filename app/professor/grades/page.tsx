@@ -1,11 +1,10 @@
 
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { requireRole } from "@/lib/auth/session";
+import { Card, CardContent } from "@/components/ui/Card";
+import { hasRole, requireRole } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { Roles } from "@/models/roles";
 import { ProfessorGradeForm } from "@/components/forms/ProfessorGradeForm";
-import { professorDeleteGrade } from "@/server/actions/professor";
 
 export default async function ProfessorGradesPage() {
   const { profile } = await requireRole([Roles.PROFESSOR]);
@@ -22,13 +21,15 @@ export default async function ProfessorGradesPage() {
     (d) => d.data() as { id: string; studentId: string; subjectId: string },
   );
 
-  const studentsSnap = await getAdminDb()
+  const studentsByArraySnap = await getAdminDb()
     .collection("users")
-    .where("role", "==", Roles.STUDENT)
+    .where("roles", "array-contains", Roles.STUDENT)
     .get();
-  const allStudents = studentsSnap.docs.map(
-    (d) => d.data() as { id: string; name: string; email: string },
-  );
+  const studentsByLegacySnap = await getAdminDb().collection("users").where("role", "==", Roles.STUDENT).get();
+  const allStudents = [...studentsByArraySnap.docs, ...studentsByLegacySnap.docs]
+    .map((d) => d.data() as { id: string; name: string; email: string; role?: string; roles?: string[] })
+    .filter((value, index, self) => self.findIndex((st) => st.id === value.id) === index)
+    .filter((st) => hasRole(st, Roles.STUDENT));
 
   const allGradesSnap = await getAdminDb()
     .collection("grades")

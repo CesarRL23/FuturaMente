@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { requireRole } from "@/lib/auth/session";
+import { hasRole, requireRole } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { Roles } from "@/models/roles";
 import { ProgressLineChart } from "@/components/charts/ProgressLineChart";
@@ -80,6 +80,14 @@ export default async function StudentHome() {
           </p>
         </div>
         <div className="flex gap-3">
+          {hasRole(profile, Roles.PROFESSOR) ? (
+            <Link
+              className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+              href="/professor"
+            >
+              Cambiar a profesor
+            </Link>
+          ) : null}
           <Link
             className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
             href="/student/grades"

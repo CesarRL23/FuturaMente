@@ -3,14 +3,14 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/auth/session";
-import { Roles } from "@/models/roles";
+import { hasRole, requireRole } from "@/lib/auth/session";
+import { Roles, type Role } from "@/models/roles";
 
 const createUserSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum([Roles.ADMIN, Roles.PROFESSOR, Roles.STUDENT]),
+  roles: z.array(z.enum([Roles.ADMIN, Roles.PROFESSOR, Roles.STUDENT])).min(1),
 });
 
 export async function adminCreateUser(formData: FormData) {
@@ -19,7 +19,7 @@ export async function adminCreateUser(formData: FormData) {
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
-    role: formData.get("role"),
+    roles: formData.getAll("roles"),
   });
   if (!parsed.success) throw new Error("Datos inválidos para crear usuario.");
 
@@ -34,7 +34,9 @@ export async function adminCreateUser(formData: FormData) {
     id: userRecord.uid,
     name: parsed.data.name,
     email: parsed.data.email,
-    role: parsed.data.role,
+    roles: parsed.data.roles,
+    primaryRole: parsed.data.roles[0],
+    role: parsed.data.roles[0],
     createdAt: now,
   });
 
@@ -43,20 +45,22 @@ export async function adminCreateUser(formData: FormData) {
 
 const setRoleSchema = z.object({
   uid: z.string().min(1),
-  role: z.enum([Roles.ADMIN, Roles.PROFESSOR, Roles.STUDENT]),
+  roles: z.array(z.enum([Roles.ADMIN, Roles.PROFESSOR, Roles.STUDENT])).min(1),
 });
 
 export async function adminSetUserRole(formData: FormData) {
   await requireRole([Roles.ADMIN]);
   const parsed = setRoleSchema.safeParse({
     uid: formData.get("uid"),
-    role: formData.get("role"),
+    roles: formData.getAll("roles"),
   });
   if (!parsed.success) throw new Error("Datos inválidos para asignar rol.");
 
   await getAdminDb().collection("users").doc(parsed.data.uid).set(
     {
-      role: parsed.data.role,
+      roles: parsed.data.roles,
+      primaryRole: parsed.data.roles[0],
+      role: parsed.data.roles[0],
       updatedAt: Date.now(),
     },
     { merge: true },
@@ -124,7 +128,10 @@ export async function adminAssignStudentToSubject(formData: FormData) {
   if (!parsed.success) throw new Error("Datos inválidos para asignar estudiante.");
 
   const studentSnap = await getAdminDb().collection("users").doc(parsed.data.studentId).get();
-  if (!studentSnap.exists || studentSnap.data()?.role !== Roles.STUDENT) {
+  if (
+    !studentSnap.exists ||
+    !hasRole(studentSnap.data() as { role?: Role; roles?: Role[] }, Roles.STUDENT)
+  ) {
     throw new Error("El usuario no existe o no es un estudiante.");
   }
 

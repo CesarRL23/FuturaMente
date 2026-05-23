@@ -1,24 +1,47 @@
 import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { requireRole } from "@/lib/auth/session";
+import { hasRole, requireRole } from "@/lib/auth/session";
 import { Roles } from "@/models/roles";
 
 export default async function ProfessorHome() {
-  await requireRole([Roles.PROFESSOR]);
+  const { profile } = await requireRole([Roles.PROFESSOR]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
+      <div className="mb-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+              Panel de Profesor
+            </h1>
+            <p className="mt-1 text-zinc-500 dark:text-zinc-400">
+              Bienvenido, {profile.name}. Gestiona tus clases con acceso rapido.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {hasRole(profile, Roles.STUDENT) ? (
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100 px-4 text-sm font-semibold transition-all hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                href="/student"
+              >
+                Ir a panel de estudiante
+              </Link>
+            ) : null}
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold transition-all hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+              href="/dashboard"
+            >
+              Inicio general
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-10">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">Panel de Profesor</h1>
-          <p className="mt-2 text-lg text-zinc-500 dark:text-zinc-400">Bienvenido de nuevo. ¿Qué te gustaría gestionar hoy?</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">Herramientas docentes</h2>
+          <p className="mt-2 text-lg text-zinc-500 dark:text-zinc-400">Selecciona una tarea para continuar.</p>
         </div>
-        <Link 
-          className="inline-flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white px-6 py-2 text-sm font-bold shadow-sm transition-all hover:bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900" 
-          href="/dashboard"
-        >
-          Ir al Inicio General
-        </Link>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
