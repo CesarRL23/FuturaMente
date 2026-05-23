@@ -65,7 +65,7 @@ export function roleLanding(roleOrRoles: Role | Role[]) {
   }
 }
 
-export function normalizeRoles(profile: Pick<UserProfile, "roles" | "role">) {
+export function normalizeRoles(profile: Partial<Pick<UserProfile, "roles" | "role">>) {
   if (Array.isArray(profile.roles) && profile.roles.length > 0) {
     return Array.from(new Set(profile.roles));
   }
@@ -73,7 +73,7 @@ export function normalizeRoles(profile: Pick<UserProfile, "roles" | "role">) {
   return [Roles.STUDENT];
 }
 
-export function hasRole(profile: Pick<UserProfile, "roles" | "role">, role: Role) {
+export function hasRole(profile: Partial<Pick<UserProfile, "roles" | "role">>, role: Role) {
   return normalizeRoles(profile).includes(role);
 }
 

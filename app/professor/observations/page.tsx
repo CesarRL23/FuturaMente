@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { hasRole, requireRole } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { Roles } from "@/models/roles";
+import { Roles, type Role } from "@/models/roles";
 import { ProfessorObservationsClient } from "./ProfessorObservationsClient";
 
 export default async function ProfessorObservationsPage() {
@@ -31,7 +31,7 @@ export default async function ProfessorObservationsPage() {
   const studentsByArraySnap = await getAdminDb().collection("users").where("roles", "array-contains", Roles.STUDENT).get();
   const studentsByLegacySnap = await getAdminDb().collection("users").where("role", "==", Roles.STUDENT).get();
   const allStudents = [...studentsByArraySnap.docs, ...studentsByLegacySnap.docs]
-    .map((d) => d.data() as { id: string; name: string; email: string; role?: string; roles?: string[] })
+    .map((d) => d.data() as { id: string; name: string; email: string; role?: Role; roles?: Role[] })
     .filter((value, index, self) => self.findIndex((st) => st.id === value.id) === index)
     .filter((st) => hasRole(st, Roles.STUDENT));
 

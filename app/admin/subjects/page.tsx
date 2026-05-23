@@ -41,27 +41,11 @@ export default async function AdminSubjectsPage() {
     .where("role", "==", Roles.STUDENT)
     .limit(500)
     .get();
-    const students = [...studentsByArraySnap.docs, ...studentsByLegacySnap.docs]
-    .map((d) => {
-      const data = d.data() as {
-        id: string;
-        name: string;
-        email: string;
-        role?: Role;
-        roles?: Role[];
-      };
-  
-      return {
-        ...data,
-        roles: data.roles ?? [],
-      };
-    })
-    .filter(
-      (value, index, self) =>
-        self.findIndex((st) => st.id === value.id) === index
-    )
+  const students = [...studentsByArraySnap.docs, ...studentsByLegacySnap.docs]
+    .map((d) => d.data() as { id: string; name: string; email: string; role?: Role; roles?: Role[] })
+    .filter((value, index, self) => self.findIndex((st) => st.id === value.id) === index)
     .filter((st) => hasRole(st, Roles.STUDENT));
-    
+
   const enrollmentsSnap = await getAdminDb()
     .collection("enrollments")
     .limit(1000)

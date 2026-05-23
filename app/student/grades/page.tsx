@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { hasRole, requireRole } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { Roles } from "@/models/roles";
+import { Roles, type Role } from "@/models/roles";
 
 export default async function StudentGradesPage() {
   const { profile } = await requireRole([Roles.STUDENT]);
@@ -50,7 +50,7 @@ export default async function StudentGradesPage() {
   const profsByLegacySnap = await db.collection("users").where("role", "==", Roles.PROFESSOR).get();
   const profsMap = new Map<string, string>();
   [...profsByArraySnap.docs, ...profsByLegacySnap.docs]
-    .map((d) => d.data() as { id: string; name: string; role?: string; roles?: string[] })
+    .map((d) => d.data() as { id: string; name: string; role?: Role; roles?: Role[] })
     .filter((value, index, self) => self.findIndex((p) => p.id === value.id) === index)
     .filter((p) => hasRole(p, Roles.PROFESSOR))
     .forEach((p) => {
