@@ -71,7 +71,7 @@ export function ProfessorObservationForm({ subjects, enrollments, students, edit
           {/* Si está en modo edición, obligamos a que el estudiante aparezca aunque no encontremos enrollment perfecto */}
           {editObservation && !enrolledStudents.find(s => s.id === editObservation.studentId) && (
             <option value={editObservation.studentId}>
-               {students.find(s => s.id === editObservation.studentId)?.name ?? editObservation.studentId}
+              {students.find(s => s.id === editObservation.studentId)?.name ?? editObservation.studentId}
             </option>
           )}
           {enrolledStudents.map((st) => (
@@ -98,9 +98,9 @@ export function ProfessorObservationForm({ subjects, enrollments, students, edit
       </div>
 
       <div className="flex gap-2 pt-2">
-        <Button 
-          type="submit" 
-          className="w-full flex-1" 
+        <Button
+          type="submit"
+          className="w-full flex-1"
           disabled={subjects.length === 0}
           onClick={() => {
             // Un pequeño timout para resetear el form asumiendo submit exitoso si no hay error
@@ -114,9 +114,9 @@ export function ProfessorObservationForm({ subjects, enrollments, students, edit
           {editObservation ? "Guardar cambios" : "Guardar observación"}
         </Button>
         {editObservation && (
-          <Button 
-            type="button" 
-            variant="secondary" 
+          <Button
+            type="button"
+            variant="secondary"
             onClick={onCancelEdit}
           >
             Cancelar

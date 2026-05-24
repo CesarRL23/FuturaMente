@@ -6,7 +6,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#09090b] text-white selection:bg-purple-500/30 overflow-hidden">
       {/* Background glowing gradients */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#09090b] to-[#09090b]"></div>
-      
+
       <main className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
         <div className="absolute -left-40 top-20 -z-10 h-[400px] w-[400px] rounded-full bg-purple-600/20 blur-[120px]"></div>
         <div className="absolute -right-40 bottom-20 -z-10 h-[400px] w-[400px] rounded-full bg-cyan-600/20 blur-[120px]"></div>
@@ -17,7 +17,7 @@ export default function Home() {
               <span className="flex h-2 w-2 rounded-full bg-cyan-400 mr-2 animate-pulse"></span>
               Plataforma 3.0 Ya Disponible
             </div>
-            
+
             <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-cyan-400 to-blue-500 drop-shadow-sm pb-2">
               FuturaMente
             </h1>
@@ -44,7 +44,7 @@ export default function Home() {
                 Ir al dashboard
               </Link>
             </div>
-            
+
             <div className="mt-16 grid grid-cols-2 gap-8 sm:grid-cols-3 pt-8 border-t border-zinc-800">
               <div>
                 <h3 className="text-3xl font-bold text-white tracking-tight">100%</h3>
@@ -60,7 +60,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          
+
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div className="relative rounded-2xl bg-zinc-900/50 p-2 ring-1 ring-white/10 backdrop-blur-2xl shadow-2xl">
               <Image

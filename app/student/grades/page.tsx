@@ -84,7 +84,7 @@ export default async function StudentGradesPage() {
         {/* Columna de Notas Izquierda/Centro */}
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Calificaciones por Materia</h2>
-          
+
           {enrolledSubjectIds.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center text-zinc-500">
@@ -94,7 +94,7 @@ export default async function StudentGradesPage() {
           ) : (
             Array.from(gradesBySubject.entries()).map(([sid, subjectGrades]) => {
               const subjectName = subjectsMap.get(sid) || "Materia desconocida";
-              const avg = subjectGrades.length > 0 
+              const avg = subjectGrades.length > 0
                 ? (subjectGrades.reduce((sum, g) => sum + Number(g.grade), 0) / subjectGrades.length).toFixed(1)
                 : "N/A";
 
@@ -131,7 +131,7 @@ export default async function StudentGradesPage() {
         {/* Columna de Observaciones Derecha */}
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Observaciones</h2>
-          
+
           <div className="space-y-4">
             {observations.length === 0 ? (
               <Card>

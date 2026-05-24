@@ -53,7 +53,7 @@ export default async function ProfessorGradesPage() {
     .where("professorId", "==", profile.id)
     .limit(500)
     .get();
-  
+
   const allObservations = allObservationsSnap.docs
     .map((d) => d.data() as { id: string; studentId: string; comment: string; createdAt: number })
     .sort((a, b) => b.createdAt - a.createdAt);
@@ -67,8 +67,8 @@ export default async function ProfessorGradesPage() {
             Gestiona notas y observaciones en una sola vista centralizada.
           </p>
         </div>
-        <Link 
-          className="inline-flex h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-2 text-sm font-semibold shadow-sm transition-all hover:bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900" 
+        <Link
+          className="inline-flex h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-2 text-sm font-semibold shadow-sm transition-all hover:bg-zinc-50 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
           href="/professor"
         >
           Volver al Panel

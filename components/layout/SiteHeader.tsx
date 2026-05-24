@@ -19,45 +19,45 @@ export async function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-black/95 backdrop-blur text-white">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/" className="flex items-center gap-2 font-semibold text-white">
           FuturaMente
         </Link>
 
         {session && profile ? (
           <div className="flex items-center gap-4">
-            <span className="text-sm text-zinc-600 dark:text-zinc-300 hidden sm:inline-block">
+            <span className="text-sm text-zinc-300 hidden sm:inline-block">
               {profile.name} ({profile.roles.join(" / ")})
             </span>
             <Link 
               href={roleLanding(profile.roles)} 
-              className="text-sm font-medium hover:text-zinc-600 dark:hover:text-zinc-300"
+              className="text-sm font-medium text-zinc-300 hover:text-white transition-colors"
             >
               Dashboard
             </Link>
             {hasRole(profile, Roles.PROFESSOR) && hasRole(profile, Roles.STUDENT) ? (
               <>
-                <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
+                <div className="h-4 w-px bg-zinc-700" />
                 <Link
                   href="/professor"
-                  className="text-sm font-medium hover:text-zinc-600 dark:hover:text-zinc-300"
+                  className="text-sm font-medium text-zinc-300 hover:text-white transition-colors"
                 >
                   Panel profesor
                 </Link>
                 <Link
                   href="/student"
-                  className="text-sm font-medium hover:text-zinc-600 dark:hover:text-zinc-300"
+                  className="text-sm font-medium text-zinc-300 hover:text-white transition-colors"
                 >
                   Panel estudiante
                 </Link>
               </>
             ) : null}
-            <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
+            <div className="h-4 w-px bg-zinc-700" />
             <form action={handleLogout}>
               <button 
                 type="submit" 
-                className="text-sm font-medium text-red-600 hover:text-red-500 dark:text-red-500 dark:hover:text-red-400"
+                className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
               >
                 Cerrar sesión
               </button>
@@ -65,7 +65,7 @@ export async function SiteHeader() {
           </div>
         ) : (
           <div className="flex items-center gap-4 text-sm font-medium">
-            <Link href="/login" className="hover:text-zinc-600 dark:hover:text-zinc-300">
+            <Link href="/login" className="text-zinc-300 hover:text-white transition-colors">
               Iniciar sesión
             </Link>
           </div>

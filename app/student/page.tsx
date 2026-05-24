@@ -115,7 +115,7 @@ export default async function StudentHome() {
             <CardHeader>
               <CardTitle>Evolución del Promedio</CardTitle>
               <CardDescription>
-                Esta gráfica muestra tu promedio general de todas las materias semana tras semana. 
+                Esta gráfica muestra tu promedio general de todas las materias semana tras semana.
                 Te ayuda a visualizar si tu rendimiento está mejorando o descendiendo con el tiempo.
               </CardDescription>
             </CardHeader>
@@ -129,7 +129,7 @@ export default async function StudentHome() {
             <CardHeader>
               <CardTitle>Fortalezas por Materia</CardTitle>
               <CardDescription>
-                Representa tu desempeño actual en cada asignatura de forma radial. 
+                Representa tu desempeño actual en cada asignatura de forma radial.
                 Cuanto más se extienda el área hacia una materia, mayor es tu fortaleza en ella.
               </CardDescription>
             </CardHeader>
@@ -143,7 +143,7 @@ export default async function StudentHome() {
             <CardHeader>
               <CardTitle>Promedio por Asignatura</CardTitle>
               <CardDescription>
-                Compara directamente tus promedios actuales entre las diferentes materias. 
+                Compara directamente tus promedios actuales entre las diferentes materias.
                 Ideal para identificar rápidamente las asignaturas que requieren mayor atención.
               </CardDescription>
             </CardHeader>
