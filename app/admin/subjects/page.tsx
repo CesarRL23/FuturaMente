@@ -113,11 +113,11 @@ export default async function AdminSubjectsPage() {
                 <div key={s.id} className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
                   <div className="font-medium">{s.name}</div>
                   <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">id: {s.id}</div>
-                  <form action={adminAssignProfessor} className="mt-3 flex items-center gap-2">
+                  <form action={adminAssignProfessor} className="mt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input type="hidden" name="subjectId" value={s.id} />
                     <select
                       name="professorId"
-                      className="h-10 flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                      className="h-10 w-full flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
                       defaultValue={s.professorId ?? ""}
                       required
                     >
@@ -169,11 +169,11 @@ export default async function AdminSubjectsPage() {
                     )}
                   </ul>
 
-                  <form action={adminAssignStudentToSubject} className="flex items-center gap-2">
+                  <form action={adminAssignStudentToSubject} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input type="hidden" name="subjectId" value={s.id} />
                     <select
                       name="studentId"
-                      className="h-9 flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                      className="h-9 w-full flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
                       defaultValue=""
                       required
                     >
