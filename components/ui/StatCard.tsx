@@ -1,0 +1,26 @@
+import { Icon, type IconName } from "@/components/ui/Icon";
+
+export function StatCard({
+  label,
+  value,
+  icon,
+  hint,
+}: {
+  label: string;
+  value: number | string;
+  icon: IconName;
+  hint?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-slate-600">{label}</p>
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+          <Icon name={icon} className="h-[18px] w-[18px]" />
+        </span>
+      </div>
+      <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
+      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+    </div>
+  );
+}

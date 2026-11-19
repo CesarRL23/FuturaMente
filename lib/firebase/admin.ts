@@ -14,6 +14,12 @@ function initAdmin() {
     return adminApp;
   }
 
+  // Pruebas de integración con el emulador local de Firestore: sin credenciales reales.
+  if (process.env.FIRESTORE_EMULATOR_HOST) {
+    adminApp = initializeApp({ projectId: process.env.GCLOUD_PROJECT ?? "demo-monline" });
+    return adminApp;
+  }
+
   const { FIREBASE_SERVICE_ACCOUNT_JSON } = getServerEnv();
   if (!FIREBASE_SERVICE_ACCOUNT_JSON) {
     throw new Error(

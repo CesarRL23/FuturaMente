@@ -1,52 +1,106 @@
-import Link from "next/link";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ModuleCard } from "@/components/ui/ModuleCard";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
 import { requireRole } from "@/lib/auth/session";
+import { listSubjects } from "@/lib/data/subjects";
+import { countUsers, listUsersByRole } from "@/lib/data/users";
 import { Roles } from "@/models/roles";
 
 export default async function AdminHome() {
-  await requireRole([Roles.ADMIN]);
+  const { profile } = await requireRole([Roles.ADMIN]);
+
+  const [totalUsers, professors, students, subjects] = await Promise.all([
+    countUsers(),
+    listUsersByRole(Roles.PROFESSOR),
+    listUsersByRole(Roles.STUDENT),
+    listSubjects(),
+  ]);
+  const subjectsWithoutProfessor = subjects.filter((s) => s.professorIds.length === 0).length;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="rounded-2xl border border-zinc-200 bg-gradient-to-r from-zinc-900 to-zinc-700 p-8 text-white shadow-lg dark:border-zinc-800">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Panel de Administrador</h1>
-            <p className="mt-2 text-sm text-zinc-200">
-              Gestiona usuarios, permisos y materias desde un solo lugar.
-            </p>
-          </div>
-          <Link
-            className="inline-flex h-10 items-center justify-center rounded-md border border-white/30 bg-white/10 px-4 text-sm font-medium hover:bg-white/20"
-            href="/dashboard"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
+    <>
+      <PageHeader
+        title="Centro de administración"
+        description={`Hola, ${profile.name}. Este es el estado actual de MONLINE.`}
+      />
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Usuarios registrados" value={totalUsers} icon="users" />
+        <StatCard label="Profesores" value={professors.length} icon="presentation" />
+        <StatCard label="Estudiantes" value={students.length} icon="graduation" />
+        <StatCard
+          label="Materias"
+          value={subjects.length}
+          icon="book"
+          hint={
+            subjectsWithoutProfessor > 0
+              ? `${subjectsWithoutProfessor} sin profesor asignado`
+              : undefined
+          }
+        />
       </div>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <Card className="border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/50">
-          <CardHeader>
-            <CardTitle>Usuarios</CardTitle>
-            <CardDescription>
-              Crea cuentas y asigna uno o varios roles (ADMIN, PROFESSOR, STUDENT).
-            </CardDescription>
-          </CardHeader>
-          <Link className="text-sm font-medium hover:underline" href="/admin/users">
-            Administrar usuarios
-          </Link>
-        </Card>
-        <Card className="border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/50">
-          <CardHeader>
-            <CardTitle>Materias</CardTitle>
-            <CardDescription>Crear materias y asignar profesores.</CardDescription>
-          </CardHeader>
-          <Link className="text-sm font-medium hover:underline" href="/admin/subjects">
-            Administrar materias
-          </Link>
-        </Card>
+      <h2 className="mt-10 text-lg font-semibold text-slate-900">Módulos</h2>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ModuleCard
+          href="/admin/professors"
+          icon="presentation"
+          title="Profesores"
+          description="Consulta los profesores y las materias que tienen asignadas."
+        />
+        <ModuleCard
+          href="/admin/students"
+          icon="graduation"
+          title="Estudiantes"
+          description="Consulta los estudiantes registrados en la plataforma."
+        />
+        <ModuleCard
+          href="/admin/subjects"
+          icon="book"
+          title="Materias"
+          description="Crea materias y relaciónalas con uno o varios profesores."
+        />
+        <ModuleCard
+          href="/admin/users"
+          icon="shield"
+          title="Usuarios y permisos"
+          description="Crea cuentas y asigna roles de administrador, profesor o estudiante."
+        />
+        <ModuleCard
+          href="/admin/tutoring"
+          icon="layers"
+          title="Monitorías"
+          description="Supervisa las monitorías reservadas, su estado y su enlace."
+        />
+        <ModuleCard
+          href="/admin/bookings"
+          icon="bookmark"
+          title="Reservas"
+          description="Seguimiento de las reservas realizadas por los estudiantes."
+          upcoming
+        />
+        <ModuleCard
+          href="/admin/settlements"
+          icon="wallet"
+          title="Liquidaciones"
+          description="Pagos a profesores y registros financieros."
+          upcoming
+        />
+        <ModuleCard
+          href="/admin/reports"
+          icon="chart"
+          title="Reportes"
+          description="Estadísticas de uso, monitorías e ingresos."
+          upcoming
+        />
+        <ModuleCard
+          href="/admin/settings"
+          icon="settings"
+          title="Configuración"
+          description="Parámetros generales de la plataforma."
+          upcoming
+        />
       </div>
-    </div>
+    </>
   );
 }

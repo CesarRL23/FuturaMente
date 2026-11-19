@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Código del sistema anterior (notas), fuera del funcionamiento activo:
+    "legacy/**",
   ]),
 ]);
 

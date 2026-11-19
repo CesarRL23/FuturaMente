@@ -1,208 +1,179 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { hasRole, requireRole } from "@/lib/auth/session";
-import { getAdminDb } from "@/lib/firebase/admin";
-import { Roles, type Role } from "@/models/roles";
-import { adminAssignProfessor, adminCreateSubject, adminAssignStudentToSubject, adminRemoveStudentFromSubject } from "@/server/actions/admin";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Icon } from "@/components/ui/Icon";
+import { Input, Label, Select, Textarea } from "@/components/ui/Input";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRole } from "@/lib/auth/session";
+import { listSubjects } from "@/lib/data/subjects";
+import { listUsersByRole } from "@/lib/data/users";
+import { Roles } from "@/models/roles";
+import {
+  adminAddProfessorToSubject,
+  adminCreateSubject,
+  adminRemoveProfessorFromSubject,
+} from "@/server/actions/admin";
+
+export const metadata: Metadata = { title: "Materias" };
 
 export default async function AdminSubjectsPage() {
   await requireRole([Roles.ADMIN]);
-
-  const subjectsSnap = await getAdminDb()
-    .collection("subjects")
-    .orderBy("createdAt", "desc")
-    .limit(50)
-    .get();
-  const subjects = subjectsSnap.docs.map((d) => d.data() as { id: string; name: string; professorId: string | null });
-
-  const professorsByArraySnap = await getAdminDb()
-    .collection("users")
-    .where("roles", "array-contains", Roles.PROFESSOR)
-    .limit(100)
-    .get();
-  const professorsByLegacySnap = await getAdminDb()
-    .collection("users")
-    .where("role", "==", Roles.PROFESSOR)
-    .limit(100)
-    .get();
-  const professors = [...professorsByArraySnap.docs, ...professorsByLegacySnap.docs]
-    .map((d) => d.data() as { id: string; name: string; email: string })
-    .filter((value, index, self) => self.findIndex((p) => p.id === value.id) === index);
-
-  const studentsByArraySnap = await getAdminDb()
-    .collection("users")
-    .where("roles", "array-contains", Roles.STUDENT)
-    .limit(500)
-    .get();
-  const studentsByLegacySnap = await getAdminDb()
-    .collection("users")
-    .where("role", "==", Roles.STUDENT)
-    .limit(500)
-    .get();
-  const students = [...studentsByArraySnap.docs, ...studentsByLegacySnap.docs]
-    .map((d) => d.data() as { id: string; name: string; email: string; role?: Role; roles?: Role[] })
-    .filter((value, index, self) => self.findIndex((st) => st.id === value.id) === index)
-    .filter((st) => hasRole(st, Roles.STUDENT));
-
-  const enrollmentsSnap = await getAdminDb()
-    .collection("enrollments")
-    .limit(1000)
-    .get();
-  const enrollments = enrollmentsSnap.docs.map((d) => d.data() as { id: string; studentId: string; subjectId: string });
+  const [subjects, professors] = await Promise.all([
+    listSubjects(),
+    listUsersByRole(Roles.PROFESSOR),
+  ]);
+  const professorById = new Map(professors.map((p) => [p.id, p]));
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Materias</h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-            Crea materias y asigna profesores.
-          </p>
-        </div>
-        <Link className="text-sm font-medium hover:underline" href="/admin">
-          Volver a Admin
-        </Link>
-      </div>
+    <>
+      <PageHeader
+        title="Materias"
+        description="Cada materia puede tener varios profesores, y un profesor puede dictar varias materias."
+      />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+        {/* Crear materia */}
+        <Card className="h-fit">
           <CardHeader>
-            <CardTitle>Crear materia</CardTitle>
-            <CardDescription>Opcional: asigna profesor al crearla.</CardDescription>
+            <CardTitle>Nueva materia</CardTitle>
+            <CardDescription>Puedes asignar profesores ahora o más adelante.</CardDescription>
           </CardHeader>
-
-          <form action={adminCreateSubject} className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Nombre</label>
-              <Input name="name" placeholder="Ej: Matemáticas" required />
+          <form action={adminCreateSubject} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="subject-name">Nombre</Label>
+              <Input id="subject-name" name="name" placeholder="Ej. Cálculo diferencial" required minLength={2} maxLength={80} />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Profesor (opcional)</label>
-              <select
-                name="professorId"
-                className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
-                defaultValue=""
-              >
-                <option value="">Sin asignar</option>
-                {professors.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.email})
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-1.5">
+              <Label htmlFor="subject-description">Descripción (opcional)</Label>
+              <Textarea
+                id="subject-description"
+                name="description"
+                maxLength={500}
+                placeholder="Temas que cubre la monitoría"
+              />
             </div>
+            <fieldset className="space-y-1.5">
+              <legend className="text-sm font-medium text-slate-700">Profesores</legend>
+              {professors.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No hay profesores registrados.{" "}
+                  <Link href="/admin/users" className="font-medium text-brand-600 hover:text-brand-700">
+                    Asigna el rol
+                  </Link>{" "}
+                  primero.
+                </p>
+              ) : (
+                <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2">
+                  {professors.map((p) => (
+                    <label
+                      key={p.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-slate-50"
+                    >
+                      <input
+                        type="checkbox"
+                        name="professorIds"
+                        value={p.id}
+                        className="h-4 w-4 accent-brand-600"
+                      />
+                      <span className="text-slate-800">{p.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </fieldset>
             <Button type="submit" className="w-full">
-              Crear
+              <Icon name="plus" className="h-4 w-4" />
+              Crear materia
             </Button>
           </form>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Lista (últimas 50)</CardTitle>
-            <CardDescription>Asignación de profesor por materia.</CardDescription>
-          </CardHeader>
+        {/* Listado */}
+        <div className="space-y-4">
+          {subjects.length === 0 ? (
+            <EmptyState
+              icon="book"
+              title="Aún no hay materias"
+              description="Crea la primera materia con el formulario."
+            />
+          ) : (
+            subjects.map((subject) => {
+              const available = professors.filter((p) => !subject.professorIds.includes(p.id));
+              return (
+                <Card key={subject.id}>
+                  <div className="flex flex-col gap-1">
+                    <h2 className="font-semibold text-slate-900">{subject.name}</h2>
+                    {subject.description ? (
+                      <p className="text-sm text-slate-600">{subject.description}</p>
+                    ) : null}
+                  </div>
 
-          <div className="space-y-4">
-            {subjects.length === 0 ? (
-              <div className="text-sm text-zinc-600 dark:text-zinc-300">No hay materias aún.</div>
-            ) : (
-              subjects.map((s) => (
-                <div key={s.id} className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-                  <div className="font-medium">{s.name}</div>
-                  <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">id: {s.id}</div>
-                  <form action={adminAssignProfessor} className="mt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <input type="hidden" name="subjectId" value={s.id} />
-                    <select
-                      name="professorId"
-                      className="h-10 w-full flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
-                      defaultValue={s.professorId ?? ""}
-                      required
-                    >
-                      <option value="" disabled>
-                        Selecciona profesor
-                      </option>
-                      {professors.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.email})
-                        </option>
-                      ))}
-                    </select>
-                    <Button type="submit" variant="secondary">
-                      Asignar
-                    </Button>
-                  </form>
-
-                  <div className="my-4 h-px bg-zinc-200 dark:bg-zinc-800" />
-
-                  <div className="mb-2 text-sm font-medium">Estudiantes inscritos</div>
-                  <ul className="mb-3 space-y-1">
-                    {enrollments.filter((e) => e.subjectId === s.id).length === 0 ? (
-                      <li className="text-xs text-zinc-500">Ningún estudiante inscrito.</li>
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Profesores ({subject.professorIds.length})
+                    </p>
+                    {subject.professorIds.length === 0 ? (
+                      <p className="mt-2 text-sm text-slate-500">Sin profesores asignados.</p>
                     ) : (
-                      enrollments
-                        .filter((e) => e.subjectId === s.id)
-                        .map((e) => {
-                          const st = students.find((st) => st.id === e.studentId);
+                      <ul className="mt-2 flex flex-wrap gap-2">
+                        {subject.professorIds.map((pid) => {
+                          const prof = professorById.get(pid);
                           return (
-                            <li
-                              key={e.id}
-                              className="flex items-center justify-between rounded border border-zinc-100 bg-zinc-50 p-2 text-xs dark:border-zinc-800 dark:bg-zinc-900"
-                            >
-                              <span>{st ? `${st.name} (${st.email})` : e.studentId}</span>
-                              <form action={adminRemoveStudentFromSubject}>
-                                <input type="hidden" name="subjectId" value={s.id} />
-                                <input type="hidden" name="studentId" value={e.studentId} />
-                                <Button
-                                  type="submit"
-                                  variant="ghost"
-                                  className="h-6 w-6 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
-                                >
-                                  &times;
-                                </Button>
+                            <li key={pid}>
+                              <form action={adminRemoveProfessorFromSubject}>
+                                <input type="hidden" name="subjectId" value={subject.id} />
+                                <input type="hidden" name="professorId" value={pid} />
+                                <Badge variant={prof ? "brand" : "warning"} className="py-1 pr-1">
+                                  {prof ? prof.name : "Usuario sin rol de profesor"}
+                                  <button
+                                    type="submit"
+                                    className="rounded-full p-0.5 hover:bg-brand-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                                    aria-label={`Quitar a ${prof?.name ?? "este usuario"} de ${subject.name}`}
+                                  >
+                                    <Icon name="x" className="h-3.5 w-3.5" />
+                                  </button>
+                                </Badge>
                               </form>
                             </li>
                           );
-                        })
+                        })}
+                      </ul>
                     )}
-                  </ul>
+                  </div>
 
-                  <form action={adminAssignStudentToSubject} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <input type="hidden" name="subjectId" value={s.id} />
-                    <select
-                      name="studentId"
-                      className="h-9 w-full flex-1 rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"
-                      defaultValue=""
-                      required
+                  {available.length > 0 ? (
+                    <form
+                      action={adminAddProfessorToSubject}
+                      className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row"
                     >
-                      <option value="" disabled>
-                        Inscribir estudiante...
-                      </option>
-                      {students.map((st) => {
-                        const isEnrolled = enrollments.some(
-                          (e) => e.subjectId === s.id && e.studentId === st.id,
-                        );
-                        if (isEnrolled) return null;
-                        return (
-                          <option key={st.id} value={st.id}>
-                            {st.name} ({st.email})
+                      <input type="hidden" name="subjectId" value={subject.id} />
+                      <label htmlFor={`add-${subject.id}`} className="sr-only">
+                        Profesor a agregar
+                      </label>
+                      <Select id={`add-${subject.id}`} name="professorId" required defaultValue="" className="sm:flex-1">
+                        <option value="" disabled>
+                          Selecciona un profesor…
+                        </option>
+                        {available.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
                           </option>
-                        );
-                      })}
-                    </select>
-                    <Button type="submit" variant="secondary" className="h-9">
-                      Añadir
-                    </Button>
-                  </form>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
+                        ))}
+                      </Select>
+                      <Button type="submit" variant="secondary">
+                        Agregar profesor
+                      </Button>
+                    </form>
+                  ) : null}
+                </Card>
+              );
+            })
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-

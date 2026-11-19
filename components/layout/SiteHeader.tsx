@@ -1,16 +1,15 @@
 import Link from "next/link";
-import { clearSession } from "@/server/actions/auth";
-import { getSessionUser, getUserProfile, hasRole, roleLanding } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { Roles } from "@/models/roles";
+import { Logo } from "@/components/layout/Logo";
+import { buttonClasses } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
+import { getSessionUser, getUserProfile, roleLanding } from "@/lib/auth/session";
+import { RoleLabels } from "@/models/roles";
+import { clearSession } from "@/server/actions/auth";
 
 export async function SiteHeader() {
   const session = await getSessionUser();
-  let profile = null;
-
-  if (session) {
-    profile = await getUserProfile(session.uid);
-  }
+  const profile = session ? await getUserProfile(session.uid) : null;
 
   const handleLogout = async () => {
     "use server";
@@ -19,56 +18,44 @@ export async function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-black/95 backdrop-blur text-white">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-white">
-          FuturaMente
-        </Link>
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Logo />
 
         {session && profile ? (
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-zinc-300 hidden sm:inline-block">
-              {profile.name} ({profile.roles.join(" / ")})
-            </span>
-            <Link 
-              href={roleLanding(profile.roles)} 
-              className="text-sm font-medium text-zinc-300 hover:text-white transition-colors"
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden text-right md:block">
+              <p className="text-sm font-medium leading-tight text-slate-900">{profile.name}</p>
+              <p className="text-xs leading-tight text-slate-500">
+                {profile.roles.map((r) => RoleLabels[r]).join(" · ")}
+              </p>
+            </div>
+            <Link
+              href={roleLanding(profile.roles)}
+              className={buttonClasses({ variant: "secondary", size: "sm" })}
             >
-              Dashboard
+              Mi panel
             </Link>
-            {hasRole(profile, Roles.PROFESSOR) && hasRole(profile, Roles.STUDENT) ? (
-              <>
-                <div className="h-4 w-px bg-zinc-700" />
-                <Link
-                  href="/professor"
-                  className="text-sm font-medium text-zinc-300 hover:text-white transition-colors"
-                >
-                  Panel profesor
-                </Link>
-                <Link
-                  href="/student"
-                  className="text-sm font-medium text-zinc-300 hover:text-white transition-colors"
-                >
-                  Panel estudiante
-                </Link>
-              </>
-            ) : null}
-            <div className="h-4 w-px bg-zinc-700" />
             <form action={handleLogout}>
-              <button 
-                type="submit" 
-                className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
+              <button
+                type="submit"
+                className={buttonClasses({ variant: "ghost", size: "sm" })}
+                aria-label="Cerrar sesión"
               >
-                Cerrar sesión
+                <Icon name="logout" className="h-4 w-4" />
+                <span className="hidden sm:inline">Salir</span>
               </button>
             </form>
           </div>
         ) : (
-          <div className="flex items-center gap-4 text-sm font-medium">
-            <Link href="/login" className="text-zinc-300 hover:text-white transition-colors">
+          <nav className="flex items-center gap-2">
+            <Link href="/login" className={buttonClasses({ variant: "ghost", size: "sm" })}>
               Iniciar sesión
             </Link>
-          </div>
+            <Link href="/register" className={buttonClasses({ size: "sm" })}>
+              Crear cuenta
+            </Link>
+          </nav>
         )}
       </div>
     </header>

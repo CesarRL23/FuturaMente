@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test --experimental-strip-types --no-warnings \"tests/*.test.ts\"",
+    "test:integration": "npx -y firebase-tools@13 emulators:exec --only firestore --project demo-monline \"node --experimental-strip-types --no-warnings --import ./tests/integration/register.mjs --test tests/integration/flow.integration.ts\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -30,8 +30,16 @@ export function getClientEnv() {
 
 const serverSchema = z.object({
   FIREBASE_SERVICE_ACCOUNT_JSON: z.string().optional(),
-  AUTH_COOKIE_NAME: z.string().default("acadex_session"),
+  AUTH_COOKIE_NAME: z.string().min(1).default("monline_session"),
 });
+
+/**
+ * Nombres de cookie de sesión usados antes de MONLINE.
+ * Se siguen aceptando (solo lectura) para no cerrar la sesión de golpe a quien ya estaba
+ * conectado; al iniciar o cerrar sesión se borran. Las cookies duran 5 días, así que esta
+ * lista puede vaciarse pasado ese plazo tras el despliegue.
+ */
+export const LEGACY_AUTH_COOKIE_NAMES = ["acadex_session"] as const;
 
 export function getServerEnv() {
   const parsed = serverSchema.safeParse(process.env);

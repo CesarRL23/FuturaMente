@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Input, Label } from "@/components/ui/Input";
 import { loginWithGoogle, registerWithEmail } from "@/lib/auth/client";
 import { createSessionFromIdToken, ensureUserProfile } from "@/server/actions/auth";
 
@@ -16,26 +15,20 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
 
-  async function handleRegister() {
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const cred = await registerWithEmail(name.trim() || "Sin nombre", email.trim(), password);
+      const displayName = name.trim() || "Sin nombre";
+      const cred = await registerWithEmail(displayName, email.trim(), password);
       const idToken = await cred.user.getIdToken();
       await createSessionFromIdToken(idToken);
-      await ensureUserProfile({
-        uid: cred.user.uid,
-        name: cred.user.displayName ?? (name.trim() || "Sin nombre"),
-        email: cred.user.email ?? email.trim(),
-      });
-      // redirigir a la página de inicio en lugar del dashboard
-      router.push("/");
-      router.refresh();
+      await ensureUserProfile({ name: cred.user.displayName ?? displayName });
+      window.location.href = "/dashboard";
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo registrar.");
-    } finally {
       setLoading(false);
     }
   }
@@ -47,62 +40,65 @@ export default function RegisterPage() {
       const cred = await loginWithGoogle();
       const idToken = await cred.user.getIdToken();
       await createSessionFromIdToken(idToken);
-      await ensureUserProfile({
-        uid: cred.user.uid,
-        name: cred.user.displayName ?? "Sin nombre",
-        email: cred.user.email ?? "sin-email@local",
-      });
-      // después del registro con Google enviamos al home
-      router.push("/");
-      router.refresh();
+      await ensureUserProfile({ name: cred.user.displayName ?? "Sin nombre" });
+      window.location.href = "/dashboard";
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo registrar con Google.");
-    } finally {
       setLoading(false);
     }
   }
 
   return (
-    <AuthShell title="Crear cuenta" subtitle="Registro con correo y contraseña (o Google).">
-      <div className="space-y-5">
+    <AuthShell
+      title="Crear cuenta"
+      subtitle="Regístrate como estudiante para empezar a buscar monitorías."
+    >
+      <form className="space-y-5" onSubmit={handleRegister}>
         {error ? <Alert variant="danger">{error}</Alert> : null}
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Nombre</label>
+        <div className="space-y-1.5">
+          <Label htmlFor="name">Nombre completo</Label>
           <Input
+            id="name"
             type="text"
             placeholder="Tu nombre"
             autoComplete="name"
+            required
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Correo</label>
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Correo electrónico</Label>
           <Input
+            id="email"
             type="email"
             placeholder="tu@correo.com"
             autoComplete="email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Contraseña</label>
+        <div className="space-y-1.5">
+          <Label htmlFor="password">Contraseña</Label>
           <Input
+            id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Mínimo 6 caracteres"
             autoComplete="new-password"
+            required
+            minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
 
         <div className="space-y-3">
-          <Button type="button" className="w-full" onClick={handleRegister} disabled={loading}>
-            {loading ? "Creando..." : "Crear cuenta"}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
           </Button>
           <Button
             type="button"
@@ -115,14 +111,13 @@ export default function RegisterPage() {
           </Button>
         </div>
 
-        <div className="text-sm text-zinc-600 dark:text-zinc-300">
+        <p className="text-center text-sm text-slate-600">
           ¿Ya tienes cuenta?{" "}
-          <Link className="font-medium text-zinc-900 hover:underline dark:text-white" href="/login">
+          <Link className="font-medium text-brand-600 hover:text-brand-700" href="/login">
             Inicia sesión
           </Link>
-        </div>
-      </div>
+        </p>
+      </form>
     </AuthShell>
   );
 }
-

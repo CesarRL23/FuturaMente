@@ -14,8 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FuturaMente",
-  description: "Plataforma académica para gestión y progreso estudiantil",
+  title: {
+    default: "MONLINE — Monitorías académicas",
+    template: "%s · MONLINE",
+  },
+  description:
+    "MONLINE conecta estudiantes que necesitan refuerzo académico con profesores que ofrecen monitorías.",
+  applicationName: "MONLINE",
 };
 
 export default function RootLayout({
@@ -25,9 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
         <SiteHeader />
         {children}
       </body>

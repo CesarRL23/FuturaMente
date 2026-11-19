@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// MONLINE accede a Firestore exclusivamente desde el servidor con el Admin SDK
+// (Server Actions y Server Components), que no está sujeto a estas reglas.
+// El navegador solo usa Firebase Authentication, así que se niega todo acceso directo
+// desde clientes: nadie puede leer enlaces de reuniones, precios ni reservas ajenas
+// consultando Firestore con el SDK web.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
