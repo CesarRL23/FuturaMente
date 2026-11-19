@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { PaymentMethodDialog } from "@/components/booking/PaymentMethodDialog";
 import { ActionForm } from "@/components/forms/ActionForm";
 import { Input } from "@/components/ui/Input";
 import type { ActionState } from "@/lib/actions";
@@ -42,9 +43,19 @@ export function BookSlotForm({
       pendingLabel="Reservando…"
       className="space-y-3"
       buttonClassName="w-full"
-      confirmMessage={
+      renderConfirm={
         price
-          ? `Vas a reservar una monitoría ${capacity === 1 ? "individual" : `grupal para ${capacity} personas`} por ${formatCOP(price)} (precio total de la monitoría). ¿Confirmas la reserva?`
+          ? (dialog) => (
+              <PaymentMethodDialog
+                {...dialog}
+                summary={
+                  <>
+                    Monitoría {capacity === 1 ? "individual" : `grupal para ${capacity} personas`} ·{" "}
+                    <strong className="text-slate-900">{formatCOP(price)}</strong> (precio total)
+                  </>
+                }
+              />
+            )
           : undefined
       }
     >

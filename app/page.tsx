@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
@@ -50,13 +51,22 @@ export default async function Home() {
     <div>
       {/* Hero */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-2 lg:gap-16">
+          {/* Logo: arriba del título en móvil, a la derecha en escritorio */}
+          <div className="flex justify-center lg:order-last lg:justify-end">
+            <Image
+              src="/brand/logo-nombre.png"
+              alt="MONLINE"
+              width={816}
+              height={306}
+              priority
+              sizes="(min-width: 1024px) 560px, 90vw"
+              className="h-auto w-full max-w-sm sm:max-w-md lg:max-w-xl"
+            />
+          </div>
+
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700 ring-1 ring-inset ring-brand-200">
-              <Icon name="graduation" className="h-4 w-4" />
-              Monitorías académicas
-            </span>
-            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
               El refuerzo que necesitas, con el profesor indicado.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">

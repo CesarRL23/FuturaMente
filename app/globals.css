@@ -2,22 +2,22 @@
 
 /*
  * MONLINE — tokens de diseño.
- * Paleta: "brand" (índigo) como color principal + neutros "slate" de Tailwind.
+ * Paleta: "brand" (rojo del logo, ~#B5141A) como color principal + neutros "slate" de Tailwind.
  * Los colores semánticos (éxito, alerta, error) usan emerald / amber / red de Tailwind.
  * Se usan como utilidades normales: bg-brand-600, text-brand-700, ring-brand-200, etc.
  */
 @theme {
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-800: #3730a3;
-  --color-brand-900: #312e81;
-  --color-brand-950: #1e1b4b;
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fde3e3;
+  --color-brand-200: #fbcaca;
+  --color-brand-300: #f6a2a3;
+  --color-brand-400: #ec6a6d;
+  --color-brand-500: #dc3a3f;
+  --color-brand-600: #c01b21;
+  --color-brand-700: #a3151a;
+  --color-brand-800: #86141a;
+  --color-brand-900: #6f161a;
+  --color-brand-950: #3d0709;
 }
 
 @theme inline {
